@@ -21,39 +21,37 @@
         {
             string userInput;
             bool isExit = false;
+
             Zoo zoo = new Zoo();
+            zoo.CreateCages();
 
             while (isExit == false)
             {
-                Console.WriteLine("Выберете вольер, чтобы подойти к нему:");
-                Console.WriteLine(CockooCage + " - Вольер 1");
-                Console.WriteLine(OwlCage + " - Вольер 2");
-                Console.WriteLine(DuckCage + " - Вольер 3");
-                Console.WriteLine(CrowCage + " - Вольер 4");
-                Console.WriteLine(Exit + " - Exit\n");
+                Console.WriteLine("\nВыберете вольер, чтобы подойти к нему:");
+                Console.WriteLine(CockooCage + " - Вольер с кукушками");
+                Console.WriteLine(OwlCage + " - Вольер с Совами");
+                Console.WriteLine(DuckCage + " - Вольер с утками");
+                Console.WriteLine(CrowCage + " - Вольер с воронами");
+                Console.WriteLine(Exit + " - Выход\n");
 
                 userInput = Console.ReadLine();
 
                 switch (userInput)
                 {
                     case CockooCage:
-                        zoo.CageCuckoos.ShowCageTitle();
-                        zoo.CageCuckoos.ShowInhabitants();
+                        zoo.ShowCage("Кукушка");
                         break;
 
                     case OwlCage:
-                        zoo.CageOwls.ShowCageTitle();
-                        zoo.CageOwls.ShowInhabitants();
+                        zoo.ShowCage("Сова");
                         break;
 
                     case DuckCage:
-                        zoo.CageDucks.ShowCageTitle();
-                        zoo.CageDucks.ShowInhabitants();
+                        zoo.ShowCage("Утка");
                         break;
 
                     case CrowCage:
-                        zoo.CageCrows.ShowCageTitle();
-                        zoo.CageCrows.ShowInhabitants();
+                        zoo.ShowCage("Ворона");
                         break;
 
                     case Exit:
@@ -66,145 +64,133 @@
 
     class Zoo
     {
-        public Cage CageCuckoos = new Cage(1, "Кукушки");
-        public Cage CageOwls = new Cage(2, "Совы");
-        public Cage CageDucks = new Cage(3, "Утки");
-        public Cage CageCrows = new Cage(4, "Вороны");
+        private List<Cage> _cages = new List<Cage>();
+
+        public void CreateCages()
+        {
+            Animal[] baseAnimals = { new Cuckoo(), new Owl(), new Duck(), new Crow() };
+
+            int minAnimalsCount = 5;
+            int maxAnimalsCount = 10;
+
+            for (int i = 0; i < baseAnimals.Length; i++)
+            {
+                int animalsCount = Utils.GetRandomNumber(minAnimalsCount, maxAnimalsCount);
+                List<Animal> animals = new List<Animal>();
+
+                for (int j = 0; j < animalsCount; j++)
+                {
+                    Animal animal = baseAnimals[i];
+                    animals.Add(new Animal(animal.Name, animal.Sound));
+                }
+
+                _cages.Add(new Cage(animals));
+            }
+        }
+
+        public void ShowCage(string title)
+        {
+            for (int i = 0; i < _cages.Count; i++)
+            {
+                if (_cages[i].Title == title)
+                {
+                    _cages[i].ShowTitle();
+                    _cages[i].ShowAnimals();
+                }
+            }
+        }
     }
 
     class Cage
     {
-        private int _cageCapacity = 3;
+        private List<Animal> _animals;
 
-        public Cage(int inhabitantIndex, string title)
+        public Cage(List<Animal> animals)
         {
-            InhabitantIndex = inhabitantIndex;
-            Title = title;
-            _inhabitants = FillCage(inhabitantIndex);
+            _animals = animals;
+            Title = animals[0].Name;
         }
 
-        public string Title { get; protected set; }
-        public int InhabitantIndex { get; protected set; }
-        private List<Animal> _inhabitants;
+        public string Title { get; private set; }
 
-        public void ShowCageTitle()
+        public void ShowTitle()
         {
-            Console.WriteLine($"Вольер где живут - " + Title);
+            Console.WriteLine($"Птица в вольере - " + Title);
         }
 
-        public void ShowInhabitants()
+        public void ShowAnimals()
         {
-            for (int i = 0; i < _inhabitants.Count; i++)
+            Console.WriteLine($"количество птиц в вольере - {_animals.Count}");
+
+            for (int i = 0; i < _animals.Count; i++)
             {
-                Console.WriteLine($"Птица - {_inhabitants[i].Name}, пол - {_inhabitants[i].Sex}, говорит - {_inhabitants[i].Sound}");
-            }
-        }
-
-        private List<Animal> FillCage(int index)
-        {
-
-            List<Animal> cage = new List<Animal>();
-
-            for (int i = 0; i < _cageCapacity; i++)
-            {
-                if (index != null)
-                {
-                    cage.Add(CreateAnimal(index));
-                }
-                else
-                {
-                    Console.WriteLine("Ошибка, неверный индекс животного.");
-                }
-            }
-
-            return cage;
-        }
-
-        private Animal CreateAnimal(int index)
-        {
-            switch (index)
-            {
-                case 1:
-                    return new Cuckoo();
-                case 2:
-                    return new Owl();
-                case 3:
-                    return new Duck();
-                case 4:
-                    return new Crow();
-                default:
-                    return null;
+                Console.WriteLine($"Птица - {_animals[i].Name}, пол - {_animals[i].Gender}, говорит - {_animals[i].Sound}");
             }
         }
     }
 
     class Animal
     {
-        public Animal()
+        public Animal(string name, string sound)
         {
-            Index = 0;
-            Name = "Animal";
-            Sound = "Fiu...";
-            Sex = GetSex();
+            Name = name;
+            Sound = sound;
+            GenerateGender();
         }
 
         public int Index { get; protected set; }
         public string Name { get; protected set; }
         public string Sound { get; protected set; }
-        public string Sex { get; private set; }
+        public string Gender { get; private set; }
 
-        private string GetSex()
+        public void GenerateGender()
         {
-            Random random = new Random();
-
-            if (random.Next(2) == 0)
-            {
-                return "Мужской";
-            }
-            else
-            {
-                return "Женский";
-            }
+            string[] genders = { "Самец", "Самка" };
+            int index = Utils.GetRandomNumber(genders.Length);
+            Gender = genders[index];
         }
     }
 
     class Cuckoo : Animal
     {
-        public Cuckoo() 
+        public Cuckoo() : base("Кукушка", "Ку-ку!")
         {
-            Index = 1;
-            Name = "Кукушка";
-            Sound = "Ку-ку!";
         }
     }
 
     class Owl : Animal
     {
-        public Owl()
+        public Owl() : base("Сова", "Уху!")
         {
-            Index = 2;
-            Name = "Сова";
-            Sound = "Уху!";
         }
     }
 
     class Duck : Animal
     {
-        public Duck()
+        public Duck() : base("Утка", "Кря!")
         {
-            Index = 3;
-            Name = "Утка";
-            Sound = "Кря!";
         }
     }
 
     class Crow : Animal
     {
-        public Crow()
+        public Crow() : base("Ворона", "Каррр!")
         {
-            Index = 4;
-            Name = "Ворона";
-            Sound = "Каррр!";
+        }
+    }
+
+    class Utils
+    {
+        private static Random s_random = new Random();
+
+        public static int GetRandomNumber(int minValue, int maxValue)
+        {
+            return s_random.Next(minValue, maxValue);
+        }
+
+        public static int GetRandomNumber(int maxValue)
+        {
+            return s_random.Next(maxValue);
         }
     }
 }

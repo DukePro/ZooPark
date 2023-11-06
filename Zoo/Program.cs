@@ -11,15 +11,12 @@
 
     class Menu
     {
-        private const string CockooCage = "1";
-        private const string OwlCage = "2";
-        private const string DuckCage = "3";
-        private const string CrowCage = "4";
         private const string Exit = "0";
 
         public void Run()
         {
             string userInput;
+            int indexFromUser;
             bool isExit = false;
 
             Zoo zoo = new Zoo();
@@ -28,35 +25,23 @@
             while (isExit == false)
             {
                 Console.WriteLine("\nВыберете вольер, чтобы подойти к нему:");
-                Console.WriteLine(CockooCage + " - Вольер с кукушками");
-                Console.WriteLine(OwlCage + " - Вольер с Совами");
-                Console.WriteLine(DuckCage + " - Вольер с утками");
-                Console.WriteLine(CrowCage + " - Вольер с воронами");
+                zoo.ShowAllCages();
                 Console.WriteLine(Exit + " - Выход\n");
 
                 userInput = Console.ReadLine();
 
-                switch (userInput)
+                if (userInput == Exit)
                 {
-                    case CockooCage:
-                        zoo.ShowCage("Кукушка");
-                        break;
-
-                    case OwlCage:
-                        zoo.ShowCage("Сова");
-                        break;
-
-                    case DuckCage:
-                        zoo.ShowCage("Утка");
-                        break;
-
-                    case CrowCage:
-                        zoo.ShowCage("Ворона");
-                        break;
-
-                    case Exit:
-                        isExit = true;
-                        break;
+                    isExit = true;
+                }
+                else if (int.TryParse(userInput, out indexFromUser) == false)
+                {
+                    Console.Write("Wrong index");
+                    return;
+                }
+                else
+                {
+                    zoo.ShowCage(indexFromUser);
                 }
             }
         }
@@ -88,34 +73,47 @@
             }
         }
 
-        public void ShowCage(string title)
+        public void ShowCage(int id)
         {
             for (int i = 0; i < _cages.Count; i++)
             {
-                if (_cages[i].Title == title)
+                if (_cages[i].Id == id)
                 {
                     _cages[i].ShowTitle();
                     _cages[i].ShowAnimals();
                 }
             }
         }
+
+        public void ShowAllCages()
+        {
+            for (int i = 0; i < _cages.Count; i++)
+            {
+                Console.Write($"{i+1} - ");
+                _cages[i].ShowTitle();
+            }
+        }
     }
 
     class Cage
     {
+        private static int _id = 1;
+
         private List<Animal> _animals;
 
         public Cage(List<Animal> animals)
         {
+            Id = _id++;
             _animals = animals;
             Title = animals[0].Name;
         }
 
+        public int Id { get; private set; }
         public string Title { get; private set; }
 
         public void ShowTitle()
         {
-            Console.WriteLine($"Птица в вольере - " + Title);
+            Console.WriteLine($"Вольер с птицей - " + Title);
         }
 
         public void ShowAnimals()
@@ -138,7 +136,6 @@
             GenerateGender();
         }
 
-        public int Index { get; protected set; }
         public string Name { get; protected set; }
         public string Sound { get; protected set; }
         public string Gender { get; private set; }
